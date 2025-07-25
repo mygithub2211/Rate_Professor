@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server"
-import { Pinecone } from "@pinecone-database/pinecone"
+import { NextResponse } from 'next/server'
+import { Pinecone } from '@pinecone-database/pinecone'
 
-import { OpenAI } from "openai"
+import { OpenAI } from 'openai'
 
 const systemPrompt = 
 `
@@ -40,48 +40,48 @@ Subject: [Subject]
 Rating: [Rating]/5
 Review Summary: [Brief review summary or key highlight]
 
-Example User Query: "I need recommendations for a great Chemistry professor."
+Example User Query: 'I need recommendations for a great Chemistry professor.'
 
 Example Response:
 
 Dr. Linda Johnson
 Subject: Chemistry
 Rating: 5/5
-Review Summary: "Very approachable and always willing to help. Highly recommend!"
+Review Summary: 'Very approachable and always willing to help. Highly recommend!'
 
 Dr. Emily White
 Subject: Chemistry
 Rating: 4/5
-Review Summary: "Great teacher but sometimes goes too fast. Overall, learned a lot."
+Review Summary: 'Great teacher but sometimes goes too fast. Overall, learned a lot.'
 
 Dr. Sarah Taylor
 Subject: Chemistry
 Rating: 3/5
-Review Summary: "Not bad, but the lectures can be a bit dry."
+Review Summary: 'Not bad, but the lectures can be a bit dry.'
 
 Make sure to adapt and refine your responses based on the user’s specific needs and queries and add new line between each response.
 `
 
 export async function POST(req) {
     try {
-        const data = await req.json();
-        const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY });
-        const index = pc.index("rag").namespace("ns1");
-        const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+        const data = await req.json()
+        const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY })
+        const index = pc.index('rag').namespace('ns1')
+        const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
-        const text = data[data.length - 1].content;
+        const text = data[data.length - 1].content
         const embedding = await openai.embeddings.create({
-            model: "text-embedding-ada-002",
+            model: 'text-embedding-ada-002',
             input: text
-        });
+        })
 
         const results = await index.query({
             topK: 3,
             includeMetadata: true,
             vector: embedding.data[0].embedding
-        });
+        })
 
-        let resultString = "\n\nHere are some professors that might meet your criteria:\n\n";
+        let resultString = '\n\nHere are some professors that might meet your criteria:\n\n'
         results.matches.forEach((match, index) => {
             resultString += `
             Professor ${index + 1}: ${match.metadata.name}
@@ -90,40 +90,40 @@ export async function POST(req) {
             Review Summary: ${match.metadata.review}
 
             ----------------------------------------
-            \n\n`;
-        });
+            \n\n`
+        })
 
-        const lastMessageContent = data[data.length - 1].content + resultString;
+        const lastMessageContent = data[data.length - 1].content + resultString
         const completion = await openai.chat.completions.create({
             messages: [
-                { role: "system", content: systemPrompt },
+                { role: 'system', content: systemPrompt },
                 ...data.slice(0, data.length - 1),
-                { role: "user", content: lastMessageContent }
+                { role: 'user', content: lastMessageContent }
             ],
-            model: "gpt-4",
+            model: 'gpt-4',
             stream: true
-        });
+        })
 
         const stream = new ReadableStream({
             async start(controller) {
-                const encoder = new TextEncoder();
+                const encoder = new TextEncoder()
                 try {
                     for await (const chunk of completion) {
-                        const content = chunk.choices[0]?.delta?.content;
+                        const content = chunk.choices[0]?.delta?.content
                         if (content) {
-                            controller.enqueue(encoder.encode(content));
+                            controller.enqueue(encoder.encode(content))
                         }
                     }
                 } catch (err) {
-                    controller.error(err);
+                    controller.error(err)
                 } finally {
-                    controller.close();
+                    controller.close()
                 }
             }
-        });
-        return new NextResponse(stream);
+        })
+        return new NextResponse(stream)
     } catch (error) {
-        console.error("Error in POST handler:", error);
-        return new NextResponse("Error occurred", { status: 500 });
+        console.error('Error in POST handler:', error)
+        return new NextResponse('Error occurred', { status: 500 })
     }
 }

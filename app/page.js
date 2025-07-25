@@ -1,36 +1,36 @@
-"use client"
-import { Button, TextField } from "@mui/material"
-import { Box, Stack } from "@mui/system"
-import Image from "next/image"
-import { useState } from "react"
+'use client'
+import { Button, TextField } from '@mui/material'
+import { Box, Stack } from '@mui/system'
+import Image from 'next/image'
+import { useState } from 'react'
 
 export default function Home() {
   const [messages, setMessages] = useState([
       {
-        role: "assistant",
+        role: 'assistant',
         content: "Hi! I'm the Rate My Professor support assistant. How can I help you today?"
       }
     ])
-  const [message, setMessage] = useState("")
+  const [message, setMessage] = useState('')
   const sendMessage = async () =>{
     setMessages(messages => [
       ...messages,
-      {role: "user", content: message},
-      {role: "assistant", content: ""}
+      {role: 'user', content: message},
+      {role: 'assistant', content: ''}
     ])
 
-    setMessage("")
-    const response = fetch("/api/chat",{
-      method: "POST",
+    setMessage('')
+    const response = fetch('/api/chat',{
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json"
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify([...messages, {role: "user", content: message}])
+      body: JSON.stringify([...messages, {role: 'user', content: message}])
     }).then(async (res) => {
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
 
-      let result = ""
+      let result = ''
       return reader.read().then(function processText({done, value}){
         if(done){
           return result
@@ -51,32 +51,32 @@ export default function Home() {
 
   return(
     <Box
-      width="100vw"
-      height="100vh"
-      display="flex"
-      flexDirection="column"
-      justifyContent="center"
-      alignItems="center"
+      width='100vw'
+      height='100vh'
+      display='flex'
+      flexDirection='column'
+      justifyContent='center'
+      alignItems='center'
     >
       <Stack
-        direction="column"
-        width="500px"
-        height="700px"
-        border="1px solid black"
+        direction='column'
+        width='500px'
+        height='700px'
+        border='1px solid black'
         p={2}
         spacing={3}
       >
-        <Stack direction="column" spacing={2} flexGrow={1} overflow="auto" maxHeight="100%">
+        <Stack direction='column' spacing={2} flexGrow={1} overflow='auto' maxHeight='100%'>
           {messages.map((message, index) => (
             // FIXED: Added return statement inside map to render each message
             <Box  
               key={index}
-              display="flex"
-              justifyContent={message.role === "assistant" ? "flex-start" : "flex-end"}
+              display='flex'
+              justifyContent={message.role === 'assistant' ? 'flex-start' : 'flex-end'}
             >
               <Box 
-                bgcolor={message.role === "assistant" ? "#1976d2" : "#d32f2f"}
-                color="white"
+                bgcolor={message.role === 'assistant' ? '#1976d2' : '#d32f2f'}
+                color='white'
                 borderRadius={16}
                 p={3}             
               >
@@ -85,16 +85,16 @@ export default function Home() {
             </Box>
           ))} {/* FIXED: Closed the map function correctly with parentheses */}
         </Stack>
-        <Stack direction="row" spacing={2}>
+        <Stack direction='row' spacing={2}>
           <TextField
-            label="Message"
+            label='Message'
             fullWidth
             value={message}
             onChange={e => {
               setMessage(e.target.value)
             }}
           />
-          <Button variant="contained" onClick={sendMessage}>Send</Button>
+          <Button variant='contained' onClick={sendMessage}>Send</Button>
         </Stack>
       </Stack>
     </Box>
