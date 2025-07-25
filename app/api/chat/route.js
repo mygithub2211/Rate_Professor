@@ -59,7 +59,7 @@ Subject: Chemistry
 Rating: 3/5
 Review Summary: "Not bad, but the lectures can be a bit dry."
 
-Make sure to adapt and refine your responses based on the user’s specific needs and queries.
+Make sure to adapt and refine your responses based on the user’s specific needs and queries and add new line between each response.
 `
 
 export async function POST(req) {
